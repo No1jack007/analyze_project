@@ -8,7 +8,7 @@ rm -rf ${file}
 done
 
 output_path='/opt/vehicle/mysql-out-data/'
-current=`date "+%Y-%m-%d %H:%M:%S"`'--'
+current=`date "+%Y%m%d%H%M%S"`'-'
 
 host='127.0.0.1'
 user='root'

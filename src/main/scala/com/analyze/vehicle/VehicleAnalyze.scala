@@ -10,21 +10,19 @@ object VehicleAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]";
-    var path = "D:\\0-program\\test\\";
-    var fileName = "sys_veh_produce.txt";
+    var path = "D:\\0-program\\test\\sys_veh_produce.txt";
     var departId="";
 
     if (args.length > 0) {
       master = args(0);
       path = args(1);
-      fileName = args(2);
-      departId=args(3);
+      departId=args(2);
     }
 
     val conf = new SparkConf().setMaster(master).setAppName("vehicleAnalyze");
     val sc = new SparkContext(conf);
 
-    val vehicleData = sc.textFile(path + fileName);
+    val vehicleData = sc.textFile(path);
     val vehicleData1 = vehicleData.map(dealData(_));
     val vehicleData2 = vehicleData1.filter(filterData(_));
     val vehicleData3 = vehicleData2.map(getData(_));
@@ -46,6 +44,8 @@ object VehicleAnalyze {
       })
       println()
     })
+
+
     sc.stop();
   }
 
