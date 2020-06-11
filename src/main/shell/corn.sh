@@ -1,0 +1,1 @@
+0 * * * * /opt/vehicle/mysql-out-data/mysql-backup.sh >> /opt/vehicle/mysql-out-data/output.log
