@@ -3,6 +3,7 @@ package com.analyze.vehicle
 import java.sql.PreparedStatement
 import java.util.UUID
 
+import cn.hutool.core.date
 import com.alibaba.druid.pool.DruidPooledConnection
 import com.analyze.util.{DatabasePool, DateUtil}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -64,11 +65,13 @@ object VehicleAnalyze {
 
     val result = vehicleData7
 
+    val cleanDate=date.DateUtil.now;
+
     result.foreachPartition(partion => {
       @transient val dbp = DatabasePool.getInstance
 
       val con = dbp.getConnection
-      val cleanSql="delete from analyze_report_vehicle"
+      val cleanSql="delete from analyze_report_vehicle where create_time < '"+cleanDate+"'"
       val ps = con.prepareStatement(cleanSql)
       ps.execute()
       ps.close()
@@ -83,7 +86,7 @@ object VehicleAnalyze {
         val sixty = x._2(4)
         val notOnSchedule=sixTeen+thirtyOne+fortySix+sixty
 
-        val sql="insert into analyze_report_vehicle values('"+id+"','"+x._1+"','"+fifteen+"','"+notOnSchedule+"','"+fifteen+"','"+sixTeen+"','"+thirtyOne+"','"+fortySix+"','"+sixty+"','"+departId+"')"
+        val sql="insert into analyze_report_vehicle values('"+id+"','"+date.DateUtil.now+"','"+x._1+"','"+fifteen+"','"+notOnSchedule+"','"+fifteen+"','"+sixTeen+"','"+thirtyOne+"','"+fortySix+"','"+sixty+"','"+departId+"')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
