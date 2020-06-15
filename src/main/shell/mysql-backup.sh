@@ -1,13 +1,13 @@
-#!/bin/bash 
+#!/bin/bash
+output_path='/opt/vehicle/mysql-out-data/'
 table_name=('sys_veh_produce' 'sys_veh_sale' 'after_sale_repair_record' 'retired_battery_record')
 suffix='.txt'
 for file in ${table_name[@]}
 do
 echo ${file}
-rm -rf ${file}
+rm -rf ${output_path}${file}
 done
 
-output_path='/opt/vehicle/mysql-out-data/'
 current=`date "+%Y%m%d%H%M%S"`'-'
 
 host='127.0.0.1'
@@ -27,6 +27,6 @@ done
 
 for file in ${table_name[@]}
 do
-mkdir ${file}
-mv *${file}${suffix} ${file}
+mkdir ${output_path}${file}
+mv ${output_path}*${file}${suffix} ${output_path}${file}
 done

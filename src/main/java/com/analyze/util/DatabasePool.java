@@ -14,7 +14,7 @@ import java.util.Properties;
  * @author: zhang yufei
  * @create: 2020-06-12 11:22
  **/
-public class DatabasePool {
+public class DatabasePool implements Serializable {
 
     private static DatabasePool databasePool = null;
     private static DruidDataSource druidDataSource = null;
