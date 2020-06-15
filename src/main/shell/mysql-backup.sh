@@ -1,5 +1,10 @@
 #!/bin/bash
+
 output_path='/opt/vehicle/mysql-out-data/'
+host='127.0.0.1'
+user='root'
+password='qaz123'
+
 table_name=('sys_veh_produce' 'sys_veh_sale' 'after_sale_repair_record' 'retired_battery_record')
 suffix='.txt'
 for file in ${table_name[@]}
@@ -10,9 +15,6 @@ done
 
 current=`date "+%Y%m%d%H%M%S"`'-'
 
-host='127.0.0.1'
-user='root'
-password='qaz123'
 database_array=('vehicle01' 'vehicle02' 'vehicle03' 'vehicle04' 'vehicle05' 'vehicle06' 'vehicle07' 'vehicle08' 'vehicle09' 'vehicle10' 'vehicle11' 'vehicle12')
 for db in ${database_array[@]}
 do
