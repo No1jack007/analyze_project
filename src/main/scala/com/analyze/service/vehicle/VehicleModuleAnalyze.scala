@@ -1,4 +1,4 @@
-package com.analyze.vehicle
+package com.analyze.service.vehicle
 
 import org.apache.spark.{SparkConf, SparkContext}
 

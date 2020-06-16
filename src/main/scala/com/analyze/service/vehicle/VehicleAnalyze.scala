@@ -1,4 +1,4 @@
-package com.analyze.vehicle
+package com.analyze.service.vehicle
 
 import java.sql.PreparedStatement
 import java.util.UUID
@@ -15,7 +15,7 @@ object VehicleAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_veh_produce.txt"
+    var path = "D:\\0-program\\test\\sys_ve_produce\\"
     var departId = ""
 
     if (args.length > 0) {
@@ -94,8 +94,6 @@ object VehicleAnalyze {
       })
       con.close()
     })
-
-
 
     sc.stop()
   }
