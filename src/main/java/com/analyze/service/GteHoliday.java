@@ -28,6 +28,11 @@ import java.util.regex.Pattern;
 public class GteHoliday {
 
     public static void main(String args[]) {
+        String path="D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties";
+        if(args.length>0){
+            path=args[0];
+        }
+
         Map<String,String> holidayMap=new LinkedHashMap<>();
         List<String> yearLit=new LinkedList<>();
 
@@ -64,7 +69,7 @@ public class GteHoliday {
         }
 
         try {
-            DatabasePool dbp = DatabasePool.getInstance();
+            DatabasePool dbp = DatabasePool.getInstance(path);
             DruidPooledConnection con = dbp.getConnection();
             PreparedStatement ps=null;
             String deleteSql="delete from sys_holiday";

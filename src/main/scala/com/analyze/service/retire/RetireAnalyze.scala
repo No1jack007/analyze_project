@@ -15,14 +15,18 @@ object RetireAnalyze {
     var master = "local[*]"
     var path = "D:\\0-program\\test\\sys_veh_produce.txt"
     var departId = ""
+    var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
     if (args.length > 0) {
       master = args(0)
       path = args(1)
-      departId = args(2)
+      databaseConf = args(2)
+      departId = args(3)
     }
 
-    val conf = new SparkConf().setMaster(master).setAppName("vehicleAnalyze")
+    val holiday = DateUtil.getHoliday(databaseConf)
+
+    val conf = new SparkConf().setMaster(master).setAppName("retireAnalyze")
     val sc = new SparkContext(conf)
 
     val vehicleData = sc.textFile(path)
@@ -39,17 +43,17 @@ object RetireAnalyze {
       var fortySix = 0
       var sixty = 0
       x._2.foreach(y => {
-        var day = DateUtil.countWorkDay(x._1, y(2))
+        var day = DateUtil.countWorkDay(x._1, y(2), holiday)
         if (day <= 15) {
-          fifteen=fifteen+1
+          fifteen = fifteen + 1
         } else if (day > 15 && day <= 30) {
-          sixTeen=sixTeen+1
+          sixTeen = sixTeen + 1
         } else if (day > 30 && day <= 45) {
-          thirtyOne=thirtyOne+1
+          thirtyOne = thirtyOne + 1
         } else if (day > 45 && day < 60) {
-          fortySix=fortySix+1
+          fortySix = fortySix + 1
         } else if (day > 60) {
-          sixty=sixty+1
+          sixty = sixty + 1
         }
       })
       result.append(fifteen)
@@ -59,32 +63,32 @@ object RetireAnalyze {
       result.append(sixty)
       (x._1, result)
     })
-    val vehicleData7=vehicleData6.repartition(10)
+    val vehicleData7 = vehicleData6.repartition(10)
 
     val result = vehicleData7
 
-    val cleanDate=date.DateUtil.now;
+    val cleanDate = date.DateUtil.now;
 
     result.foreachPartition(partion => {
-      @transient val dbp = DatabasePool.getInstance
+      @transient val dbp = DatabasePool.getInstance(databaseConf)
 
       val con = dbp.getConnection
-      val cleanSql="delete from analyze_report_vehicle where create_time < '"+cleanDate+"'"
+      val cleanSql = "delete from analyze_report_vehicle where create_time < '" + cleanDate + "'"
       val ps = con.prepareStatement(cleanSql)
       ps.execute()
       ps.close()
 
-      partion.foreach(x=>{
+      partion.foreach(x => {
 
-        val id= UUID.randomUUID.toString
+        val id = UUID.randomUUID.toString
         val fifteen = x._2(0)
         val sixTeen = x._2(1)
-        val thirtyOne =x._2(2)
-        val fortySix =x._2(3)
+        val thirtyOne = x._2(2)
+        val fortySix = x._2(3)
         val sixty = x._2(4)
-        val notOnSchedule=sixTeen+thirtyOne+fortySix+sixty
+        val notOnSchedule = sixTeen + thirtyOne + fortySix + sixty
 
-        val sql="insert into analyze_report_vehicle values('"+id+"','"+date.DateUtil.now+"','"+x._1+"','"+fifteen+"','"+notOnSchedule+"','"+fifteen+"','"+sixTeen+"','"+thirtyOne+"','"+fortySix+"','"+sixty+"','"+departId+"')"
+        val sql = "insert into analyze_report_vehicle values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
@@ -92,7 +96,6 @@ object RetireAnalyze {
       })
       con.close()
     })
-
 
 
     sc.stop()

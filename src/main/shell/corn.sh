@@ -1,1 +1,1 @@
-0 * * * * /opt/vehicle/mysql-out-data/mysql-backup.sh >> /opt/vehicle/mysql-out-data/output.log
+0 * * * * /opt/application/analyze/analyze_project/mysql-backup.sh >> /opt/application/analyze/analyze_project/output.log

@@ -19,8 +19,8 @@ public class DatabasePool implements Serializable {
     private static DatabasePool databasePool = null;
     private static DruidDataSource druidDataSource = null;
 
-    static {
-        Properties properties = loadPropertyFile("db.properties");
+    private DatabasePool(String path) {
+        Properties properties = loadPropertyFile(path);
         try {
             druidDataSource = (DruidDataSource) DruidDataSourceFactory.createDataSource(properties);
         } catch (Exception e) {
@@ -28,12 +28,9 @@ public class DatabasePool implements Serializable {
         }
     }
 
-    private DatabasePool() {
-    }
-
-    public static synchronized DatabasePool getInstance() {
+    public static synchronized DatabasePool getInstance(String path) {
         if (null == databasePool) {
-            databasePool = new DatabasePool();
+            databasePool = new DatabasePool(path);
         }
         return databasePool;
     }
@@ -43,16 +40,17 @@ public class DatabasePool implements Serializable {
     }
 
     public static Properties loadPropertyFile(String fullFile) {
-        String webRootPath = null;
+//        String webRootPath = null;
         if (null == fullFile || fullFile.equals("")) {
             throw new IllegalArgumentException("Properties file path can not be null : " + fullFile);
         }
-        webRootPath = DatabasePool.class.getClassLoader().getResource("").getPath();
-        webRootPath = new File(webRootPath).getParent();
+//        webRootPath = DatabasePool.class.getClassLoader().getResource("").getPath();
+//        webRootPath = new File(webRootPath).getParent();
         InputStream inputStream = null;
         Properties p = null;
         try {
-            inputStream = new FileInputStream(new File(webRootPath + File.separator + "classes" + File.separator + fullFile));
+//            inputStream = new FileInputStream(new File(webRootPath + File.separator + "classes" + File.separator + fullFile));
+            inputStream = new FileInputStream(new File(fullFile));
             p = new Properties();
             p.load(inputStream);
         } catch (FileNotFoundException e) {

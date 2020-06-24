@@ -1,9 +1,10 @@
 #!/bin/bash
 
-output_path='/opt/vehicle/mysql-out-data/'
+output_path='/opt/data/mysql/output-data/'
+mysql_home='/opt/software/mysql/bin/'
 host='127.0.0.1'
 user='root'
-password='qaz123'
+password='root'
 
 table_name=('sys_veh_produce' 'sys_veh_sale' 'after_sale_repair_record' 'retired_battery_record')
 suffix='.txt'
@@ -24,7 +25,7 @@ do
     do
     sql=${sql}"select * from ${table} into outfile '${output_path}${current}${db}${a}${table}.txt';"
     done
-mysql -h$host -u$user -p$password -e "use ${db};${sql}"
+${mysql_home}mysql -h$host -u$user -p$password -e "use ${db};${sql}"
 done
 
 for file in ${table_name[@]}

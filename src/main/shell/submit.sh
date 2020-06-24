@@ -1,11 +1,56 @@
 #!/bin/bash
 
-JOB_HOME=/opt/analyze/analyze_project
-SPARK_HOME=/op/vehicle/
+SPARK_HOME='/opt/software/spark-2.4.1-bin-hadoop2.7'
+JOB_LOCATION='/opt/application/analyze/analyze_project'
+DATA_LOCATION='/opt/data/mysql/output-data'
+MASTER='spark://hadoop-1:7077'
+DB_PROPERTIES_LOCATION='/opt/application/analyze/analyze_project'
+DEPART_ID='1'
 
-cd ${SPARK_HOME}
+${SPARK_HOME}/bin/spark-submit \
+--class com.analyze.service.vehicle.VehicleAnalyze \
+--master ${MASTER} \
+--deploy-mode client \
+--driver-memory 2g \
+--total-executor-cores 4 \
+${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
+${MASTER} \
+${DATA_LOCATION}/sys_veh_produce \
+${DB_PROPERTIES_LOCATION}/db.properties \
+${DEPART_ID}
 
-spark2-submit \
---class com.analyze.vehicle.VehicleAnalyze \
---executor-memory 4G \
---executor-cores 8 \
+${SPARK_HOME}/bin/spark-submit \
+--class com.analyze.service.sale.SaleAnalyze \
+--master ${MASTER} \
+--deploy-mode client \
+--driver-memory 2g \
+--total-executor-cores 4 \
+${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
+${MASTER} \
+${DATA_LOCATION}/sys_veh_produce \
+${DB_PROPERTIES_LOCATION}/db.properties \
+${DEPART_ID}
+
+${SPARK_HOME}/bin/spark-submit \
+--class com.analyze.service.repair.RepairAnalyze \
+--master ${MASTER} \
+--deploy-mode client \
+--driver-memory 2g \
+--total-executor-cores 4 \
+${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
+${MASTER} \
+${DATA_LOCATION}/sys_veh_produce \
+${DB_PROPERTIES_LOCATION}/db.properties \
+${DEPART_ID}
+
+${SPARK_HOME}/bin/spark-submit \
+--class com.analyze.service.retire.RetireAnalyze \
+--master ${MASTER} \
+--deploy-mode client \
+--driver-memory 2g \
+--total-executor-cores 4 \
+${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
+${MASTER} \
+${DATA_LOCATION}/sys_veh_produce \
+${DB_PROPERTIES_LOCATION}/db.properties \
+${DEPART_ID}
