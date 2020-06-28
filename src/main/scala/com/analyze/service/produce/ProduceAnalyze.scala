@@ -78,7 +78,7 @@ object ProduceAnalyze {
       @transient val dbp = DatabasePool.getInstance(databaseConf)
 
       val con = dbp.getConnection
-      val cleanSql = "delete from analyze_report_vehicle where create_time < '" + cleanDate + "'"
+      val cleanSql = "delete from analyze_report_produce where create_time < '" + cleanDate + "'"
       val ps = con.prepareStatement(cleanSql)
       ps.execute()
       ps.close()
@@ -93,7 +93,7 @@ object ProduceAnalyze {
         val sixty = x._2(4)
         val notOnSchedule = sixTeen + thirtyOne + fortySix + sixty
 
-        val sql = "insert into analyze_report_vehicle values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
+        val sql = "insert into analyze_report_produce values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
