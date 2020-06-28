@@ -13,7 +13,7 @@ object RetireAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_veh_produce.txt"
+    var path = "D:\\0-program\\test\\analyze\\retired_battery_record"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -29,13 +29,13 @@ object RetireAnalyze {
     val conf = new SparkConf().setMaster(master).setAppName("retireAnalyze")
     val sc = new SparkContext(conf)
 
-    val vehicleData = sc.textFile(path)
-    val vehicleData1 = vehicleData.map(dealData(_))
-    val vehicleData2 = vehicleData1.filter(filterData(_))
-    val vehicleData3 = vehicleData2.map(getData(_))
-    val vehicleData4 = vehicleData3.map(reduceData(_))
-    val vehicleData5 = vehicleData4.reduceByKey(_ ++= _)
-    val vehicleData6 = vehicleData5.map(x => {
+    val retireData = sc.textFile(path)
+    val retireData1 = retireData.map(dealData(_))
+    val retireData2 = retireData1.filter(filterData(_))
+    val retireData3 = retireData2.map(getData(_))
+    val retireData4 = retireData3.map(reduceData(_))
+    val retireData5 = retireData4.reduceByKey(_ ++= _)
+    val retireData6 = retireData5.map(x => {
       val result = new ListBuffer[Int]()
       var fifteen = 0
       var sixTeen = 0
@@ -63,9 +63,9 @@ object RetireAnalyze {
       result.append(sixty)
       (x._1, result)
     })
-    val vehicleData7 = vehicleData6.repartition(10)
+    val retireData7 = retireData6.repartition(10)
 
-    val result = vehicleData7
+    val result = retireData7
 
     val cleanDate = date.DateUtil.now;
 

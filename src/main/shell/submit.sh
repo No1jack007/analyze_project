@@ -8,7 +8,7 @@ DB_PROPERTIES_LOCATION='/opt/application/analyze/analyze_project'
 DEPART_ID='1'
 
 ${SPARK_HOME}/bin/spark-submit \
---class com.analyze.service.vehicle.VehicleAnalyze \
+--class com.analyze.service.produce.ProduceAnalyze \
 --master ${MASTER} \
 --deploy-mode client \
 --driver-memory 2g \

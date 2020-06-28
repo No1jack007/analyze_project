@@ -13,7 +13,7 @@ object SaleAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_veh_sale.txt"
+    var path = "D:\\0-program\\test\\analyze\\sys_veh_sale"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -29,13 +29,13 @@ object SaleAnalyze {
     val conf = new SparkConf().setMaster(master).setAppName("saleAnalyze")
     val sc = new SparkContext(conf)
 
-    val vehicleData = sc.textFile(path)
-    val vehicleData1 = vehicleData.map(dealData(_))
-    val vehicleData2 = vehicleData1.filter(filterData(_))
-    val vehicleData3 = vehicleData2.map(getData(_))
-    val vehicleData4 = vehicleData3.map(reduceData(_))
-    val vehicleData5 = vehicleData4.reduceByKey(_ ++= _)
-    val vehicleData6 = vehicleData5.map(x => {
+    val saleData = sc.textFile(path)
+    val saleData1 = saleData.map(dealData(_))
+    val saleData2 = saleData1.filter(filterData(_))
+    val saleData3 = saleData2.map(getData(_))
+    val saleData4 = saleData3.map(reduceData(_))
+    val saleData5 = saleData4.reduceByKey(_ ++= _)
+    val saleData6 = saleData5.map(x => {
       val result = new ListBuffer[Int]()
       var fifteen = 0
       var sixTeen = 0
@@ -63,9 +63,9 @@ object SaleAnalyze {
       result.append(sixty)
       (x._1, result)
     })
-    val vehicleData7 = vehicleData6.repartition(10)
+    val saleData7 = saleData6.repartition(10)
 
-    val result = vehicleData7
+    val result = saleData7
 
     val cleanDate = date.DateUtil.now;
 

@@ -1,25 +1,23 @@
 package com.analyze.service.vehicle
 
-import java.sql.PreparedStatement
-import java.text.{ParseException, SimpleDateFormat}
-import java.util.{Date, UUID}
+import java.text.SimpleDateFormat
+import java.util.UUID
 
 import cn.hutool.core.date
-import com.alibaba.druid.pool.DruidPooledConnection
 import com.analyze.bean.Holiday
 import com.analyze.util.{CheckUtil, DatabasePool, DateUtil}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ListBuffer
 
-object VehicleAnalyze {
+object ProduceAnalyze {
 
   private val sdf = new SimpleDateFormat("yyyy-MM-dd")
 
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_veh_produce\\"
+    var path = "D:\\0-program\\test\\analyze\\sys_veh_produce"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -32,7 +30,7 @@ object VehicleAnalyze {
 
     val holiday = DateUtil.getHoliday(databaseConf)
 
-    val conf = new SparkConf().setMaster(master).setAppName("vehicleAnalyze")
+    val conf = new SparkConf().setMaster(master).setAppName("produceAnalyze")
     val sc = new SparkContext(conf)
 
     val vehicleData = sc.textFile(path)

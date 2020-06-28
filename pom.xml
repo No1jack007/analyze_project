@@ -158,7 +158,7 @@
                 <configuration>
 <!--                    <archive>-->
 <!--                        <manifest>-->
-<!--                            <mainClass>VehicleAnalyze</mainClass>-->
+<!--                            <mainClass>ProduceAnalyze</mainClass>-->
 <!--                        </manifest>-->
 <!--                    </archive>-->
                     <descriptorRefs>

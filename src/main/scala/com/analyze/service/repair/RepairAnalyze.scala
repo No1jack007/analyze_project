@@ -13,7 +13,7 @@ object RepairAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\after_sale_repair_record"
+    var path = "D:\\0-program\\test\\analyze\\after_sale_repair_record"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -29,13 +29,13 @@ object RepairAnalyze {
     val conf = new SparkConf().setMaster(master).setAppName("repairAnalyze")
     val sc = new SparkContext(conf)
 
-    val vehicleData = sc.textFile(path)
-    val vehicleData1 = vehicleData.map(dealData(_))
-    val vehicleData2 = vehicleData1.filter(filterData(_))
-    val vehicleData3 = vehicleData2.map(getData(_))
-    val vehicleData4 = vehicleData3.map(reduceData(_))
-    val vehicleData5 = vehicleData4.reduceByKey(_ ++= _)
-    val vehicleData6 = vehicleData5.map(x => {
+    val repairData = sc.textFile(path)
+    val repairData1 = repairData.map(dealData(_))
+    val repairData2 = repairData1.filter(filterData(_))
+    val repairData3 = repairData2.map(getData(_))
+    val repairData4 = repairData3.map(reduceData(_))
+    val repairData5 = repairData4.reduceByKey(_ ++= _)
+    val repairData6 = repairData5.map(x => {
       val result = new ListBuffer[Int]()
       var fifteen = 0
       var sixTeen = 0
@@ -63,9 +63,9 @@ object RepairAnalyze {
       result.append(sixty)
       (x._1, result)
     })
-    val vehicleData7 = vehicleData6.repartition(10)
+    val repairData7 = repairData6.repartition(10)
 
-    val result = vehicleData7
+    val result = repairData7
 
     val cleanDate = date.DateUtil.now;
 
