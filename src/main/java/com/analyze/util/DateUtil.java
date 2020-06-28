@@ -21,7 +21,6 @@ import java.util.Map;
  **/
 public class DateUtil implements Serializable {
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     public static Holiday getHoliday(String path) {
         String sql = "select * from sys_holiday";
@@ -53,8 +52,11 @@ public class DateUtil implements Serializable {
 
 
     public static int countWorkDay(String start, String end, Holiday holiday) {
+//        System.out.println("start:\t"+start);
+//        System.out.println("end:\t"+end);
         Date startDate = null;
         Date endDate = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         try {
             startDate = sdf.parse(start);
             endDate = sdf.parse(end);
@@ -85,6 +87,7 @@ public class DateUtil implements Serializable {
     public static int getDutyDays(Date StartDate, Date EndDate, Holiday holiday) {//得到非周六周日的工作日
         StartDate.setDate(StartDate.getDate() + 1);
         int result = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         while (StartDate.compareTo(EndDate) <= 0) {
             if (StartDate.getDay() != 6 && StartDate.getDay() != 0) {
                 //周内

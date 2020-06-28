@@ -7,7 +7,7 @@ import java.util.{Date, UUID}
 import cn.hutool.core.date
 import com.alibaba.druid.pool.DruidPooledConnection
 import com.analyze.bean.Holiday
-import com.analyze.util.{DatabasePool, DateUtil}
+import com.analyze.util.{CheckUtil, DatabasePool, DateUtil}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ListBuffer
@@ -19,7 +19,7 @@ object VehicleAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_ve_produce\\"
+    var path = "D:\\0-program\\test\\sys_veh_produce\\"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -112,7 +112,7 @@ object VehicleAnalyze {
   }
 
   def filterData(x: Array[String]): (Boolean) = {
-    if ("1".equals(x(12)) && !"".equals(x(13))) {
+    if ("1".equals(x(12)) && CheckUtil.checkTime_1(x(13)) && CheckUtil.checkTime_1(x(4))) {
       true
     } else {
       false

@@ -3,7 +3,7 @@ package com.analyze.service.sale
 import java.util.UUID
 
 import cn.hutool.core.date
-import com.analyze.util.{DatabasePool, DateUtil}
+import com.analyze.util.{CheckUtil, DatabasePool, DateUtil}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ListBuffer
@@ -13,7 +13,7 @@ object SaleAnalyze {
   def main(args: Array[String]): Unit = {
 
     var master = "local[*]"
-    var path = "D:\\0-program\\test\\sys_veh_produce.txt"
+    var path = "D:\\0-program\\test\\sys_veh_sale.txt"
     var departId = ""
     var databaseConf = "D:\\0-program\\work\\idea\\analyze_project\\src\\main\\resources\\db.properties"
 
@@ -43,7 +43,7 @@ object SaleAnalyze {
       var fortySix = 0
       var sixty = 0
       x._2.foreach(y => {
-        var day = DateUtil.countWorkDay(x._1, y(2), holiday)
+        val day = DateUtil.countWorkDay(x._1, y(2), holiday)
         if (day <= 15) {
           fifteen = fifteen + 1
         } else if (day > 15 && day <= 30) {
@@ -73,7 +73,7 @@ object SaleAnalyze {
       @transient val dbp = DatabasePool.getInstance(databaseConf)
 
       val con = dbp.getConnection
-      val cleanSql = "delete from analyze_report_vehicle where create_time < '" + cleanDate + "'"
+      val cleanSql = "delete from analyze_report_sale where create_time < '" + cleanDate + "'"
       val ps = con.prepareStatement(cleanSql)
       ps.execute()
       ps.close()
@@ -88,7 +88,7 @@ object SaleAnalyze {
         val sixty = x._2(4)
         val notOnSchedule = sixTeen + thirtyOne + fortySix + sixty
 
-        val sql = "insert into analyze_report_vehicle values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
+        val sql = "insert into analyze_report_sale values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
@@ -106,7 +106,7 @@ object SaleAnalyze {
   }
 
   def filterData(x: Array[String]): (Boolean) = {
-    if ("1".equals(x(12)) && !"".equals(x(13))) {
+    if ("1".equals(x(11)) && CheckUtil.checkTime_1(x(12)) && CheckUtil.checkDate_1(x(4))) {
       true
     } else {
       false
@@ -116,9 +116,9 @@ object SaleAnalyze {
   def getData(x: Array[String]): (Array[String]) = {
     var result: Array[String] = new Array[String](4)
     result(0) = x(0)
-    result(1) = x(4).substring(0, 10)
-    result(2) = x(13).substring(0, 10)
-    result(3) = x(15)
+    result(1) = x(4)
+    result(2) = x(12).substring(0, 10)
+    result(3) = x(14)
     result
   }
 

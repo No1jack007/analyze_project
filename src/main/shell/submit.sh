@@ -27,7 +27,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --total-executor-cores 4 \
 ${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
 ${MASTER} \
-${DATA_LOCATION}/sys_veh_produce \
+${DATA_LOCATION}/sys_veh_sale \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
@@ -39,7 +39,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --total-executor-cores 4 \
 ${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
 ${MASTER} \
-${DATA_LOCATION}/sys_veh_produce \
+${DATA_LOCATION}/after_sale_repair_record \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
@@ -51,6 +51,6 @@ ${SPARK_HOME}/bin/spark-submit \
 --total-executor-cores 4 \
 ${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
 ${MASTER} \
-${DATA_LOCATION}/sys_veh_produce \
+${DATA_LOCATION}/retired_battery_record \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}

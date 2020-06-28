@@ -156,11 +156,11 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>VehicleAnalyze</mainClass>
-                        </manifest>
-                    </archive>
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <mainClass>VehicleAnalyze</mainClass>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
