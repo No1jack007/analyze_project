@@ -1,4 +1,4 @@
-package com.analyze.service.vehicle
+package com.analyze.service.produce
 
 import java.text.SimpleDateFormat
 import java.util.UUID
