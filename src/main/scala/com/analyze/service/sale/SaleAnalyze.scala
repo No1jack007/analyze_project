@@ -114,7 +114,7 @@ object SaleAnalyze {
   }
 
   def getData(x: Array[String]): (Array[String]) = {
-    var result: Array[String] = new Array[String](4)
+    val result: Array[String] = new Array[String](4)
     result(0) = x(0)
     result(1) = x(4)
     result(2) = x(12).substring(0, 10)

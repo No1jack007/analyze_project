@@ -113,7 +113,7 @@ object RepairAnalyze {
   }
 
   def getData(x: Array[String]): (Array[String]) = {
-    var result: Array[String] = new Array[String](4)
+    val result: Array[String] = new Array[String](4)
     result(0) = x(2)
     result(1) = x(3)
     result(2) = x(11).substring(0, 10)

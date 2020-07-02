@@ -33,13 +33,13 @@ object ProduceAnalyze {
     val conf = new SparkConf().setMaster(master).setAppName("produceAnalyze")
     val sc = new SparkContext(conf)
 
-    val vehicleData = sc.textFile(path)
-    val vehicleData1 = vehicleData.map(dealData(_))
-    val vehicleData2 = vehicleData1.filter(filterData(_))
-    val vehicleData3 = vehicleData2.map(getData(_))
-    val vehicleData4 = vehicleData3.map(reduceData(_))
-    val vehicleData5 = vehicleData4.reduceByKey(_ ++= _)
-    val vehicleData6 = vehicleData5.map(x => {
+    val produceData = sc.textFile(path)
+    val produceData1 = produceData.map(dealData(_))
+    val produceData2 = produceData1.filter(filterData(_))
+    val produceData3 = produceData2.map(getData(_))
+    val produceData4 = produceData3.map(reduceData(_))
+    val produceData5 = produceData4.reduceByKey(_ ++= _)
+    val produceData6 = produceData5.map(x => {
       val result = new ListBuffer[Int]()
       var fifteen = 0
       var sixTeen = 0
@@ -67,11 +67,11 @@ object ProduceAnalyze {
       result.append(sixty)
       (x._1, result)
     })
-    val vehicleData7 = vehicleData6.repartition(10)
+    val produceData7 = produceData6.repartition(10)
 
-    val result = vehicleData7
+    val result = produceData7
 
-    val cleanDate = date.DateUtil.now;
+    val cleanDate = date.DateUtil.now
 
     result.foreachPartition(partion => {
 
@@ -118,7 +118,7 @@ object ProduceAnalyze {
   }
 
   def getData(x: Array[String]): (Array[String]) = {
-    var result: Array[String] = new Array[String](4)
+    val result: Array[String] = new Array[String](4)
     result(0) = x(0)
     result(1) = x(4).substring(0, 10)
     result(2) = x(13).substring(0, 10)

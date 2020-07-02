@@ -63,3 +63,18 @@ ${MASTER} \
 ${DATA_LOCATION}/retired_battery_record \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
+
+${SPARK_HOME}/bin/spark-submit \
+--master ${MASTER} \
+--deploy-mode ${DRIVER_MODE} \
+--class om.analyze.service.produce.ProduceSaleAnalyze \
+--driver-memory 2g \
+--executor-memory 4g \
+--total-executor-cores 4 \
+--executor-cores 4 \
+${JOB_LOCATION}/analyze-project-jar-with-dependencies.jar \
+${MASTER} \
+${DATA_LOCATION}/sys_veh_produce \
+${DATA_LOCATION}/sys_veh_sale \
+${DB_PROPERTIES_LOCATION}/db.properties \
+${DEPART_ID}
