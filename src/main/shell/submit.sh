@@ -67,7 +67,7 @@ ${DEPART_ID}
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
 --deploy-mode ${DRIVER_MODE} \
---class om.analyze.service.produce.ProduceSaleAnalyze \
+--class com.analyze.service.produce.ProduceSaleAnalyze \
 --driver-memory 2g \
 --executor-memory 4g \
 --total-executor-cores 4 \
