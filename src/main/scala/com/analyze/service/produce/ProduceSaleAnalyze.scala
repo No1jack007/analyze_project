@@ -77,7 +77,7 @@ object ProduceSaleAnalyze {
       (x._2, x._3, produceProportion, produceGrowthRate)
     })
     val produceData12 = produceData11.map(x => {
-      (x._1, Map("produce_num"->x._2,"produce_proportion"->x._3,"produce_growth_rate"->x._4))
+      (x._1, Map("produce_num" -> x._2, "produce_proportion" -> x._3, "produce_growth_rate" -> x._4))
     })
 
     val mapYearSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
@@ -126,7 +126,7 @@ object ProduceSaleAnalyze {
       (x._2, x._3, saleProportion, saleGrowthRate)
     })
     val saleData12 = saleData11.map(x => {
-      (x._1, Map("sale_num"->x._2,"sale_propotion"->x._3,"sale_growth_rate"->x._4))
+      (x._1, Map("sale_num" -> x._2, "sale_propotion" -> x._3, "sale_growth_rate" -> x._4))
     })
 
     val produceSaleData = produceData12.union(saleData12)
@@ -145,14 +145,14 @@ object ProduceSaleAnalyze {
       ps.execute()
       ps.close()
       partition.foreach(x => {
-        val data=x._2
-        var data1=data.getOrElse("produce_num",0)
-        var data2=data.getOrElse("produce_proportion",0)
-        var data3=data.getOrElse("produce_growth_rate",0)
-        var data4=data.getOrElse("sale_num",0)
-        var data5=data.getOrElse("sale_propotion",0)
-        var data6=data.getOrElse("sale_growth_rate",0)
-        val sql = "insert into analyze_produce_sale values('" +  UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + "," + data3 + "," + data4 + "," + data5 + "," + data6 + ",'" + departId + "')"
+        val data = x._2
+        var data1 = data.getOrElse("produce_num", 0)
+        var data2 = data.getOrElse("produce_proportion", 0)
+        var data3 = data.getOrElse("produce_growth_rate", 0)
+        var data4 = data.getOrElse("sale_num", 0)
+        var data5 = data.getOrElse("sale_propotion", 0)
+        var data6 = data.getOrElse("sale_growth_rate", 0)
+        val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + "," + data3 + "," + data4 + "," + data5 + "," + data6 + ",'" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
