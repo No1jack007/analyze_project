@@ -69,7 +69,7 @@ object SaleAnalyze {
 
     val cleanDate = date.DateUtil.now;
 
-    result.foreachPartition(partion => {
+    result.foreachPartition(partition => {
       @transient val dbp = DatabasePool.getInstance(databaseConf)
 
       val con = dbp.getConnection
@@ -78,7 +78,7 @@ object SaleAnalyze {
       ps.execute()
       ps.close()
 
-      partion.foreach(x => {
+      partition.foreach(x => {
 
         val id = UUID.randomUUID.toString
         val fifteen = x._2(0)

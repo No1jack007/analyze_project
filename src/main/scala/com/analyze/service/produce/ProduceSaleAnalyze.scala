@@ -87,7 +87,7 @@ object ProduceSaleAnalyze {
 
     val saleData = sc.textFile(pathSale)
     val saleData1 = saleData.map(x => dealData(x))
-    val saleData2 = saleData1.filter(x => filterDataSalae(x))
+    val saleData2 = saleData1.filter(x => filterDataSale(x))
     val saleData3 = saleData2.map(x => getData(x))
     val saleData4 = saleData3.map(x => getReduceData(x))
     val saleData5 = saleData4.reduceByKey((x, y) => reduceData(x, y))
@@ -137,14 +137,14 @@ object ProduceSaleAnalyze {
     val result = produceSaleData1.repartition(1)
 
     val cleanDate = date.DateUtil.now
-    result.foreachPartition(partion => {
+    result.foreachPartition(partition => {
       @transient val dbp = DatabasePool.getInstance(databaseConf)
       val con = dbp.getConnection
       val cleanSql = "delete from analyze_produce_sale where create_time < '" + cleanDate + "'"
       val ps = con.prepareStatement(cleanSql)
       ps.execute()
       ps.close()
-      partion.foreach(x => {
+      partition.foreach(x => {
         val data=x._2
         var data1=data.getOrElse("produce_num",0)
         var data2=data.getOrElse("produce_proportion",0)
@@ -163,8 +163,8 @@ object ProduceSaleAnalyze {
 
     //    val resultProduce = produceData5.repartition(1)
     //
-    //    resultProduce.foreachPartition(partion => {
-    //      partion.foreach(x => {
+    //    resultProduce.foreachPartition(partition => {
+    //      partition.foreach(x => {
     //        val year = x._1.substring(0, 4)
     //        val num = broadCastYearProduce.value.getOrElse(year, 0)
     //        broadCastYearProduce.value += (year -> (num + x._2))
@@ -187,8 +187,8 @@ object ProduceSaleAnalyze {
     //
     //    val resultSale = saleData5.repartition(1)
     //
-    //    resultSale.foreachPartition(partion => {
-    //      partion.foreach(x => {
+    //    resultSale.foreachPartition(partition => {
+    //      partition.foreach(x => {
     //        val year = x._1.substring(0, 4)
     //        val num = broadCastYearSale.value.getOrElse(year, 0)
     //        broadCastYearSale.value += (year -> (num + x._2))
@@ -284,14 +284,14 @@ object ProduceSaleAnalyze {
     //
     //    val insertDataAll = sc.parallelize(broadCastInsertData.value.toList)
     //
-    //    insertDataAll.foreachPartition(partion => {
+    //    insertDataAll.foreachPartition(partition => {
     //      @transient val dbp = DatabasePool.getInstance(databaseConf)
     //      val con = dbp.getConnection
     //      val cleanSql = "delete from analyze_produce_sale where create_time < '" + cleanDate + "'"
     //      val ps = con.prepareStatement(cleanSql)
     //      ps.execute()
     //      ps.close()
-    //      partion.foreach(value => {
+    //      partition.foreach(value => {
     //        val sql = "insert into analyze_produce_sale values('" + value._2(0) + "','" + value._2(1) + "','" + value._2(2) + "'," + value._2(3) + "," + value._2(4) + "," + value._2(5) + "," + value._2(6) + "," + value._2(7) + "," + value._2(8) + ",'" + departId + "')"
     //        println(sql)
     //        val ps = con.prepareStatement(sql)
@@ -317,7 +317,7 @@ object ProduceSaleAnalyze {
     }
   }
 
-  def filterDataSalae(x: Array[String]): (Boolean) = {
+  def filterDataSale(x: Array[String]): (Boolean) = {
     if (CheckUtil.checkDate_1(x(4))) {
       true
     } else {
