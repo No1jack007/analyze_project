@@ -6,6 +6,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import java.util.{Calendar, UUID}
 
 import cn.hutool.core.date
+import cn.hutool.core.util.StrUtil
 
 object VehicleAgeAnalyze {
   def main(args: Array[String]): Unit = {
@@ -93,7 +94,7 @@ object VehicleAgeAnalyze {
   }
 
   def filterData(x: Array[String]): (Boolean) = {
-    if (CheckUtil.checkDate_1(x(4)) && CheckUtil.checkLicense(x(2))) {
+    if (StrUtil.isNotBlank(x(2)) && CheckUtil.checkDate_1(x(4)) && CheckUtil.checkLicense(x(2))) {
       true
     } else {
       false

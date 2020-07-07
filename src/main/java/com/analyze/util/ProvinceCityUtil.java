@@ -25,7 +25,7 @@ public class ProvinceCityUtil {
             ResultSet result = ps.executeQuery();
             while (result.next()) {
                 map.put(result.getString("license_initial"),result.getString("province_name"));
-                System.out.println(result.getString("license_initial")+"\t"+result.getString("province_name"));
+//                System.out.println(result.getString("license_initial")+"\t"+result.getString("province_name"));
             }
             result.close();
             ps.close();
