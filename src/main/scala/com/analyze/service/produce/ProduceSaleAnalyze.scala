@@ -31,10 +31,10 @@ object ProduceSaleAnalyze {
     val conf = new SparkConf().setMaster(master).setAppName("produceSaleAnalyze")
     val sc = new SparkContext(conf)
 
-    val mapYearProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    val broadCastYearProduce = sc.broadcast(mapYearProduce)
-    val mapMonthProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    val broadCastMonthProduce = sc.broadcast(mapMonthProduce)
+    //    val mapYearProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
+    //    val broadCastYearProduce = sc.broadcast(mapYearProduce)
+    //    val mapMonthProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
+    //    val broadCastMonthProduce = sc.broadcast(mapMonthProduce)
 
     val produceData = sc.textFile(pathProduce)
     val produceData1 = produceData.map(x => dealData(x))
@@ -42,94 +42,86 @@ object ProduceSaleAnalyze {
     val produceData3 = produceData2.map(x => getData(x))
     val produceData4 = produceData3.map(x => getReduceData(x))
     val produceData5 = produceData4.reduceByKey((x, y) => reduceData(x, y))
-    produceData5.foreach(x => {
-      val year = x._1.substring(0, 4)
-      val num = broadCastYearProduce.value.getOrElse(year, 0)
-      broadCastYearProduce.value += (year -> (num + x._2))
-      broadCastMonthProduce.value += (x._1 -> x._2)
-      println("broadCastMonthProduce\t" + broadCastMonthProduce.value)
-    })
     val produceData6 = produceData5.map(x => {
+      val nextYear = Integer.parseInt(x._1.substring(0, 4)) + 1
+      (nextYear + x._1.substring(4, 7), x._2)
+    })
+    val produceData7 = produceData5.map(x => {
       (x._1.substring(0, 4), x._2)
     })
-    val produceData7 = produceData6.reduceByKey((x, y) => x + y)
-    val produceData8 = produceData5.map(x => {
+    val produceData8 = produceData7.reduceByKey((x, y) => x + y)
+    val produceData9 = produceData5.leftOuterJoin(produceData6)
+    val produceData10 = produceData9.map(x => {
       (x._1.substring(0, 4), x)
     })
-    val produceData9 = produceData8.join(produceData7)
-    val produceData10 = produceData9.map(x => {
-      (x._1, x._2._1._1, x._2._1._2, x._2._2)
+    val produceData11 = produceData10.leftOuterJoin(produceData8)
+    val produceData12 = produceData11.map(x => {
+      (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
     })
-    val produceData11 = produceData10.map(x => {
-      val year = x._1
-      val allYearNum: Int = x._4;
+    val produceData13 = produceData12.map(x => {
+      val allYearNum: Int = Integer.parseInt(x._4.get.toString)
+      val now: Int = x._2
       val numberFormat = NumberFormat.getInstance
       numberFormat.setMaximumFractionDigits(2)
-      val produceProportion = numberFormat.format(x._3.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
-      val lastYear = Integer.parseInt(year) - 1
+      val produceProportion = numberFormat.format(now.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
       var produceGrowthRate = "0";
-      if (broadCastMonthProduce.value.contains(lastYear + x._2.substring(4, 7))) {
-        val last: Int = broadCastMonthProduce.value.getOrElse(lastYear + x._2.substring(4, 7), 0)
-        val now = x._3
+      if (!x._3.isEmpty) {
+        val last: Int = Integer.parseInt(x._3.get.toString)
         val margin = now - last
         produceGrowthRate = numberFormat.format(margin.asInstanceOf[Float] / last.asInstanceOf[Float] * 100)
       }
-      (x._2, x._3, produceProportion, produceGrowthRate)
+      (x._1, x._2, produceProportion, produceGrowthRate)
     })
-    val produceData12 = produceData11.map(x => {
+    val produceData14 = produceData13.map(x => {
       (x._1, Map("produce_num" -> x._2, "produce_proportion" -> x._3, "produce_growth_rate" -> x._4))
     })
 
-    val mapYearSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    val broadCastYearSale = sc.broadcast(mapYearSale)
-    val mapMonthSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    val broadCastMonthSale = sc.broadcast(mapMonthSale)
-
+    //    val mapYearSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
+    //    val broadCastYearSale = sc.broadcast(mapYearSale)
+    //    val mapMonthSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
+    //    val broadCastMonthSale = sc.broadcast(mapMonthSale)
+    //
     val saleData = sc.textFile(pathSale)
     val saleData1 = saleData.map(x => dealData(x))
     val saleData2 = saleData1.filter(x => filterDataSale(x))
     val saleData3 = saleData2.map(x => getData(x))
     val saleData4 = saleData3.map(x => getReduceData(x))
     val saleData5 = saleData4.reduceByKey((x, y) => reduceData(x, y))
-    saleData5.foreach(x => {
-      val year = x._1.substring(0, 4)
-      val num = broadCastYearSale.value.getOrElse(year, 0)
-      broadCastYearSale.value += (year -> (num + x._2))
-      broadCastMonthSale.value += (x._1 -> x._2)
-      println("broadCastMonthSale\t" + broadCastMonthSale.value)
-    })
     val saleData6 = saleData5.map(x => {
+      val nextYear = Integer.parseInt(x._1.substring(0, 4)) + 1
+      (nextYear + x._1.substring(4, 7), x._2)
+    })
+    val saleData7 = saleData5.map(x => {
       (x._1.substring(0, 4), x._2)
     })
-    val saleData7 = saleData6.reduceByKey((x, y) => x + y)
-    val saleData8 = saleData5.map(x => {
+    val saleData8 = saleData7.reduceByKey((x, y) => x + y)
+    val saleData9 = saleData5.leftOuterJoin(saleData6)
+    val saleData10 = saleData9.map(x => {
       (x._1.substring(0, 4), x)
     })
-    val saleData9 = saleData8.join(saleData7)
-    val saleData10 = saleData9.map(x => {
-      (x._1, x._2._1._1, x._2._1._2, x._2._2)
+    val saleData11 = saleData10.leftOuterJoin(saleData8)
+    val saleData12 = saleData11.map(x => {
+      (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
     })
-    val saleData11 = saleData10.map(x => {
-      val year = x._1
-      val allYearNum: Int = x._4;
-      val numberFormat = NumberFormat.getInstance
-      numberFormat.setMaximumFractionDigits(2)
-      val saleProportion = numberFormat.format(x._3.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
-      val lastYear = Integer.parseInt(year) - 1
+    val numberFormat = NumberFormat.getInstance
+    numberFormat.setMaximumFractionDigits(2)
+    val saleData13 = saleData12.map(x => {
+      val allYearNum: Int = Integer.parseInt(x._4.get.toString)
+      val now: Int = x._2
+      val saleProportion = numberFormat.format(now.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
       var saleGrowthRate = "0";
-      if (broadCastMonthSale.value.contains(lastYear + x._2.substring(4, 7))) {
-        val last: Int = broadCastMonthSale.value.getOrElse(lastYear + x._2.substring(4, 7), 0)
-        val now = x._3
+      if (!x._3.isEmpty) {
+        val last: Int = Integer.parseInt(x._3.get.toString)
         val margin = now - last
         saleGrowthRate = numberFormat.format(margin.asInstanceOf[Float] / last.asInstanceOf[Float] * 100)
       }
-      (x._2, x._3, saleProportion, saleGrowthRate)
+      (x._1, x._2, saleProportion, saleGrowthRate)
     })
-    val saleData12 = saleData11.map(x => {
-      (x._1, Map("sale_num" -> x._2, "sale_propotion" -> x._3, "sale_growth_rate" -> x._4))
+    val saleData14 = saleData13.map(x => {
+      (x._1, Map("sale_num" -> x._2, "sale_proportion" -> x._3, "sale_growth_rate" -> x._4))
     })
 
-    val produceSaleData = produceData12.union(saleData12)
+    val produceSaleData = produceData14.union(saleData14)
     val produceSaleData1 = produceSaleData.reduceByKey((x, y) => {
       x ++ y
     })
@@ -150,7 +142,7 @@ object ProduceSaleAnalyze {
         var data2 = data.getOrElse("produce_proportion", 0)
         var data3 = data.getOrElse("produce_growth_rate", 0)
         var data4 = data.getOrElse("sale_num", 0)
-        var data5 = data.getOrElse("sale_propotion", 0)
+        var data5 = data.getOrElse("sale_proportion", 0)
         var data6 = data.getOrElse("sale_growth_rate", 0)
         val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + "," + data3 + "," + data4 + "," + data5 + "," + data6 + ",'" + departId + "')"
         println(sql)
