@@ -22,6 +22,8 @@ ${DATA_LOCATION}/sys_veh_produce \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
+echo 'ProduceAnalyze complete---------------------'
+
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
 --deploy-mode ${DRIVER_MODE} \
@@ -35,6 +37,8 @@ ${MASTER} \
 ${DATA_LOCATION}/sys_veh_sale \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
+
+echo 'SaleAnalyze complete---------------------'
 
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
@@ -50,6 +54,8 @@ ${DATA_LOCATION}/after_sale_repair_record \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
+echo 'RepairAnalyze complete---------------------'
+
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
 --deploy-mode ${DRIVER_MODE} \
@@ -63,6 +69,8 @@ ${MASTER} \
 ${DATA_LOCATION}/retired_battery_record \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
+
+echo 'RetireAnalyze complete---------------------'
 
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
@@ -79,6 +87,8 @@ ${DATA_LOCATION}/sys_veh_sale \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
+echo 'ProduceSaleAnalyze complete---------------------'
+
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
 --deploy-mode ${DRIVER_MODE} \
@@ -92,6 +102,8 @@ ${MASTER} \
 ${DATA_LOCATION}/sys_veh_sale \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
+
+echo 'VehicleAgeAnalyze complete---------------------'
 
 ${SPARK_HOME}/bin/spark-submit \
 --master ${MASTER} \
@@ -107,3 +119,6 @@ ${DATA_LOCATION}/sys_veh_sale \
 ${DB_PROPERTIES_LOCATION}/db.properties \
 ${DEPART_ID}
 
+echo 'UserPortraitAnalyze complete---------------------'
+
+echo 'analyze all complete---------------------'
