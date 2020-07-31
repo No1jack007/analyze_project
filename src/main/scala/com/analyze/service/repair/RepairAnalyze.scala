@@ -37,30 +37,30 @@ object RepairAnalyze {
     val repairData5 = repairData4.reduceByKey(_ ++= _)
     val repairData6 = repairData5.map(x => {
       val result = new ListBuffer[Int]()
-      var fifteen = 0
-      var sixTeen = 0
-      var thirtyOne = 0
-      var fortySix = 0
-      var sixty = 0
+      var v1 = 0
+      var v2 = 0
+      var v3 = 0
+      var v4 = 0
+      var v5 = 0
       x._2.foreach(y => {
         val day = DateUtil.countWorkDay(x._1, y(2), holiday)
-        if (day <= 15) {
-          fifteen = fifteen + 1
-        } else if (day > 15 && day <= 30) {
-          sixTeen = sixTeen + 1
-        } else if (day > 30 && day <= 45) {
-          thirtyOne = thirtyOne + 1
-        } else if (day > 45 && day < 60) {
-          fortySix = fortySix + 1
-        } else if (day > 60) {
-          sixty = sixty + 1
+        if (day <= 30) {
+          v1 = v1 + 1
+        } else if (day >= 31 && day <= 60) {
+          v2 = v2 + 1
+        } else if (day >= 61 && day <= 90) {
+          v3 = v3 + 1
+        } else if (day >= 91 && day <= 120) {
+          v4 = v4 + 1
+        } else if (day > 120) {
+          v5 = v5 + 1
         }
       })
-      result.append(fifteen)
-      result.append(sixTeen)
-      result.append(thirtyOne)
-      result.append(fortySix)
-      result.append(sixty)
+      result.append(v1)
+      result.append(v2)
+      result.append(v3)
+      result.append(v4)
+      result.append(v5)
       (x._1, result)
     })
     val repairData7 = repairData6.repartition(10)
@@ -81,14 +81,14 @@ object RepairAnalyze {
       partition.foreach(x => {
 
         val id = UUID.randomUUID.toString
-        val fifteen = x._2(0)
-        val sixTeen = x._2(1)
-        val thirtyOne = x._2(2)
-        val fortySix = x._2(3)
-        val sixty = x._2(4)
-        val notOnSchedule = sixTeen + thirtyOne + fortySix + sixty
+        val v1 = x._2(0)
+        val v2 = x._2(1)
+        val v3 = x._2(2)
+        val v4 = x._2(3)
+        val v5 = x._2(4)
+        val notOnSchedule = v2 + v3 + v4 + v5
 
-        val sql = "insert into analyze_report_repair values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + fifteen + "','" + notOnSchedule + "','" + fifteen + "','" + sixTeen + "','" + thirtyOne + "','" + fortySix + "','" + sixty + "','" + departId + "')"
+        val sql = "insert into analyze_report_repair values('" + id + "','" + date.DateUtil.now + "','" + x._1 + "','" + v1 + "','" + notOnSchedule + "','" + v1 + "','" + v2 + "','" + v3 + "','" + v4 + "','" + v5 + "','" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
