@@ -6,7 +6,7 @@ import cn.hutool.core.date
 import com.analyze.service.produce.ProduceAnalyze.dealData
 import com.analyze.util.{CheckUtil, DatabasePool}
 import org.apache.spark.{SparkConf, SparkContext}
-import java.text.NumberFormat
+import java.text.{DecimalFormat, NumberFormat}
 
 import scala.collection.mutable.ListBuffer
 
@@ -59,16 +59,17 @@ object ProduceSaleAnalyze {
       (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
     })
     val produceData13 = produceData12.map(x => {
-      val allYearNum: Int = Integer.parseInt(x._4.get.toString)
-      val now: Int = x._2
-      val numberFormat = NumberFormat.getInstance
-      numberFormat.setMaximumFractionDigits(2)
-      val produceProportion = numberFormat.format(now.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
+      val allYearNum: Double = Integer.parseInt(x._4.get.toString)
+      val now: Double = x._2
+      //      val numberFormat = NumberFormat.getInstance
+      //      numberFormat.setMaximumFractionDigits(2)
+      val df: DecimalFormat = new DecimalFormat("#.00")
+      val produceProportion = df.format(now / allYearNum * 100)
       var produceGrowthRate = "0";
       if (!x._3.isEmpty) {
-        val last: Int = Integer.parseInt(x._3.get.toString)
-        val margin = now - last
-        produceGrowthRate = numberFormat.format(margin.asInstanceOf[Float] / last.asInstanceOf[Float] * 100)
+        val last: Double = Integer.parseInt(x._3.get.toString)
+        val margin: Double = now - last
+        produceGrowthRate = df.format(margin / last * 100)
       }
       (x._1, x._2, produceProportion, produceGrowthRate)
     })
@@ -103,17 +104,18 @@ object ProduceSaleAnalyze {
     val saleData12 = saleData11.map(x => {
       (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
     })
-    val numberFormat = NumberFormat.getInstance
-    numberFormat.setMaximumFractionDigits(2)
     val saleData13 = saleData12.map(x => {
-      val allYearNum: Int = Integer.parseInt(x._4.get.toString)
-      val now: Int = x._2
-      val saleProportion = numberFormat.format(now.asInstanceOf[Float] / allYearNum.asInstanceOf[Float] * 100)
+      val allYearNum: Double = Integer.parseInt(x._4.get.toString)
+      val now: Double = x._2
+      //      val numberFormat = NumberFormat.getInstance
+      //      numberFormat.setMaximumFractionDigits(2)
+      val df: DecimalFormat = new DecimalFormat("#.00")
+      val saleProportion = df.format(now / allYearNum * 100)
       var saleGrowthRate = "0";
       if (!x._3.isEmpty) {
-        val last: Int = Integer.parseInt(x._3.get.toString)
-        val margin = now - last
-        saleGrowthRate = numberFormat.format(margin.asInstanceOf[Float] / last.asInstanceOf[Float] * 100)
+        val last: Double = Integer.parseInt(x._3.get.toString)
+        val margin: Double = now - last
+        saleGrowthRate = df.format(margin / last * 100)
       }
       (x._1, x._2, saleProportion, saleGrowthRate)
     })
