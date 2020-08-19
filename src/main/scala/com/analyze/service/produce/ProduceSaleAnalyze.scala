@@ -65,7 +65,7 @@ object ProduceSaleAnalyze {
       //      numberFormat.setMaximumFractionDigits(2)
       val df: DecimalFormat = new DecimalFormat("#.00")
       val produceProportion = df.format(now / allYearNum * 100)
-      var produceGrowthRate = "0";
+      var produceGrowthRate = "--";
       if (!x._3.isEmpty) {
         val last: Double = Integer.parseInt(x._3.get.toString)
         val margin: Double = now - last
@@ -111,7 +111,7 @@ object ProduceSaleAnalyze {
       //      numberFormat.setMaximumFractionDigits(2)
       val df: DecimalFormat = new DecimalFormat("#.00")
       val saleProportion = df.format(now / allYearNum * 100)
-      var saleGrowthRate = "0";
+      var saleGrowthRate = "--";
       if (!x._3.isEmpty) {
         val last: Double = Integer.parseInt(x._3.get.toString)
         val margin: Double = now - last
@@ -146,7 +146,7 @@ object ProduceSaleAnalyze {
         var data4 = data.getOrElse("sale_num", 0)
         var data5 = data.getOrElse("sale_proportion", 0)
         var data6 = data.getOrElse("sale_growth_rate", 0)
-        val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + "," + data3 + "," + data4 + "," + data5 + "," + data6 + ",'" + departId + "')"
+        val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + ",'" + data3 + "'," + data4 + "," + data5 + ",'" + data6 + "','" + departId + "')"
         println(sql)
         val ps = con.prepareStatement(sql)
         ps.execute()
