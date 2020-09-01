@@ -1,6 +1,6 @@
 package com.analyze.service.produce
 
-import java.util.UUID
+import java.util.{Calendar, Date, UUID}
 
 import cn.hutool.core.date
 import com.analyze.service.produce.ProduceAnalyze.dealData
@@ -8,6 +8,7 @@ import com.analyze.util.{CheckUtil, DatabasePool}
 import org.apache.spark.{SparkConf, SparkContext}
 import java.text.{DecimalFormat, NumberFormat}
 
+import scala.collection.mutable.Map
 import scala.collection.mutable.ListBuffer
 
 object ProduceSaleAnalyze {
@@ -28,13 +29,11 @@ object ProduceSaleAnalyze {
       departId = args(4)
     }
 
+    val month = Array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+    val now=Calendar.getInstance().get(Calendar.YEAR)
+
     val conf = new SparkConf().setMaster(master).setAppName("produceSaleAnalyze")
     val sc = new SparkContext(conf)
-
-    //    val mapYearProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    //    val broadCastYearProduce = sc.broadcast(mapYearProduce)
-    //    val mapMonthProduce: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    //    val broadCastMonthProduce = sc.broadcast(mapMonthProduce)
 
     val produceData = sc.textFile(pathProduce)
     val produceData1 = produceData.map(x => dealData(x))
@@ -43,45 +42,73 @@ object ProduceSaleAnalyze {
     val produceData4 = produceData3.map(x => getReduceData(x))
     val produceData5 = produceData4.reduceByKey((x, y) => reduceData(x, y))
     val produceData6 = produceData5.map(x => {
-      val nextYear = Integer.parseInt(x._1.substring(0, 4)) + 1
-      (nextYear + x._1.substring(4, 7), x._2)
-    })
-    val produceData7 = produceData5.map(x => {
       (x._1.substring(0, 4), x._2)
     })
-    val produceData8 = produceData7.reduceByKey((x, y) => x + y)
-    val produceData9 = produceData5.leftOuterJoin(produceData6)
-    val produceData10 = produceData9.map(x => {
+    val produceData7 = produceData6.reduceByKey((x, y) => x + y)
+    val produceData8 = produceData5.map(x => {
       (x._1.substring(0, 4), x)
     })
-    val produceData11 = produceData10.leftOuterJoin(produceData8)
-    val produceData12 = produceData11.map(x => {
-      (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
+    val produceData9 = produceData8.leftOuterJoin(produceData7)
+    val produceData10 = produceData9.map(x => {
+      (x._2._1._1, x._2._1._2, x._2._2)
     })
-    val produceData13 = produceData12.map(x => {
-      val allYearNum: Double = Integer.parseInt(x._4.get.toString)
+    val produceData11 = produceData10.map(x => {
+      val allYearNum: Double = Integer.parseInt(x._3.get.toString)
       val now: Double = x._2
-      //      val numberFormat = NumberFormat.getInstance
-      //      numberFormat.setMaximumFractionDigits(2)
-      val df: DecimalFormat = new DecimalFormat("#.00")
-      val produceProportion = df.format(now / allYearNum * 100)
-      var produceGrowthRate = "--";
-      if (!x._3.isEmpty) {
-        val last: Double = Integer.parseInt(x._3.get.toString)
-        val margin: Double = now - last
-        produceGrowthRate = df.format(margin / last * 100)
-      }
-      (x._1, x._2, produceProportion, produceGrowthRate)
+      val v1 = now / allYearNum * 100
+      val produceProportion = Double.box(v1).formatted("%.2f")
+      (x._1, x._2, produceProportion, "produce")
     })
-    val produceData14 = produceData13.map(x => {
-      (x._1, Map("produce_num" -> x._2, "produce_proportion" -> x._3, "produce_growth_rate" -> x._4))
+    val produceData12 = produceData11.collect().toList
+    val produceData13 = produceData12.map(x => {
+      Integer.parseInt(x._1.substring(0, 4))
     })
+    val produceData14 = produceData13.sorted
+    val startProduce = produceData14.head
+    val endProduce = now
+    val dataProduce: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
+    produceData12.foreach(x => {
+      val row = Map[String, String]()
+      row.put("produce_num", x._2.toString)
+      row.put("produce_proportion", x._3)
+      dataProduce.put(x._1, row)
+    })
+    //    println(dataProduce)
+    val dataProduceInsert: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
+    for (i <- startProduce to endProduce) {
+      month.foreach(x => {
+        val date = i + "-" + x
+        val lastDate = (i - 1) + "-" + x
+        if (dataProduce.contains(date) && dataProduce.contains(lastDate)) {
+          val row: Map[String, String] = dataProduce.getOrElse(date, Map[String, String]())
+          val rowLast: Map[String, String] = dataProduce.getOrElse(lastDate, Map[String, String]())
+          val now: Double = Integer.parseInt(row.get("produce_num").get)
+          val last: Double = Integer.parseInt(rowLast.get("produce_num").get)
+          val v1 = (now - last) / last * 100
+          val produceGrowthRate = Double.box(v1).formatted("%.2f")
+          row.put("produce_growth_rate", produceGrowthRate)
+          dataProduceInsert.put(date, row)
+        } else if (dataProduce.contains(date) && !dataProduce.contains(lastDate)) {
+          val row: Map[String, String] = dataProduce.getOrElse(date, Map[String, String]())
+          row.put("produce_growth_rate", "--")
+          dataProduceInsert.put(date, row)
+        } else if (!dataProduce.contains(date) && dataProduce.contains(lastDate)) {
+          val row = Map[String, String]()
+          row.put("produce_num", "0")
+          row.put("produce_proportion", "0")
+          row.put("produce_growth_rate", "-100")
+          dataProduceInsert.put(date, row)
+        } else {
+          val row = Map[String, String]()
+          row.put("produce_num", "0")
+          row.put("produce_proportion", "0")
+          row.put("produce_growth_rate", "0")
+          dataProduceInsert.put(date, row)
+        }
+      })
+    }
+    //    println(dataProduceInsert)
 
-    //    val mapYearSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    //    val broadCastYearSale = sc.broadcast(mapYearSale)
-    //    val mapMonthSale: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.HashMap()
-    //    val broadCastMonthSale = sc.broadcast(mapMonthSale)
-    //
     val saleData = sc.textFile(pathSale)
     val saleData1 = saleData.map(x => dealData(x))
     val saleData2 = saleData1.filter(x => filterDataSale(x))
@@ -89,71 +116,160 @@ object ProduceSaleAnalyze {
     val saleData4 = saleData3.map(x => getReduceData(x))
     val saleData5 = saleData4.reduceByKey((x, y) => reduceData(x, y))
     val saleData6 = saleData5.map(x => {
-      val nextYear = Integer.parseInt(x._1.substring(0, 4)) + 1
-      (nextYear + x._1.substring(4, 7), x._2)
-    })
-    val saleData7 = saleData5.map(x => {
       (x._1.substring(0, 4), x._2)
     })
-    val saleData8 = saleData7.reduceByKey((x, y) => x + y)
-    val saleData9 = saleData5.leftOuterJoin(saleData6)
-    val saleData10 = saleData9.map(x => {
+    val saleData7 = saleData6.reduceByKey((x, y) => x + y)
+    val saleData8 = saleData5.map(x => {
       (x._1.substring(0, 4), x)
     })
-    val saleData11 = saleData10.leftOuterJoin(saleData8)
-    val saleData12 = saleData11.map(x => {
-      (x._2._1._1, x._2._1._2._1, x._2._1._2._2, x._2._2)
+    val saleData9 = saleData8.leftOuterJoin(saleData7)
+    val saleData10 = saleData9.map(x => {
+      (x._2._1._1, x._2._1._2, x._2._2)
     })
-    val saleData13 = saleData12.map(x => {
-      val allYearNum: Double = Integer.parseInt(x._4.get.toString)
+    val saleData11 = saleData10.map(x => {
+      val allYearNum: Double = Integer.parseInt(x._3.get.toString)
       val now: Double = x._2
-      //      val numberFormat = NumberFormat.getInstance
-      //      numberFormat.setMaximumFractionDigits(2)
-      val df: DecimalFormat = new DecimalFormat("#.00")
-      val saleProportion = df.format(now / allYearNum * 100)
-      var saleGrowthRate = "--";
-      if (!x._3.isEmpty) {
-        val last: Double = Integer.parseInt(x._3.get.toString)
-        val margin: Double = now - last
-        saleGrowthRate = df.format(margin / last * 100)
+      val v3 = now / allYearNum * 100
+      val saleProportion = Double.box(v3).formatted("%.2f")
+      (x._1, x._2, saleProportion, "sale")
+    })
+    val saleData12 = saleData11.collect().toList
+    val saleData13 = saleData12.map(x => {
+      Integer.parseInt(x._1.substring(0, 4))
+    })
+    val saleData14 = saleData13.sorted
+    val startSale = saleData14.head
+    val endSale = now
+    val dataSale = Map[String, Map[String, String]]()
+    saleData12.foreach(x => {
+      val row = Map[String, String]()
+      row.put("sale_num", x._2.toString)
+      row.put("sale_proportion", x._3)
+      dataSale.put(x._1, row)
+    })
+    //    println(dataSale)
+    val dataSaleInsert: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
+    for (i <- startSale to endSale) {
+      month.foreach(x => {
+        val date = i + "-" + x
+        val lastDate = (i - 1) + "-" + x
+        if (dataSale.contains(date) && dataSale.contains(lastDate)) {
+          val row = dataSale.getOrElse(date, Map[String, String]())
+          val rowLast: Map[String, String] = dataSale.getOrElse(lastDate, Map[String, String]())
+          val now: Double = Integer.parseInt(row.get("sale_num").get)
+          val last: Double = Integer.parseInt(rowLast.get("sale_num").get)
+          val v1 = (now - last) / last * 100
+          val produceGrowthRate = Double.box(v1).formatted("%.2f")
+          row.put("sale_growth_rate", produceGrowthRate)
+          dataSaleInsert.put(date, row)
+        } else if (dataSale.contains(date) && !dataSale.contains(lastDate)) {
+          val row: Map[String, String] = dataSale.getOrElse(date, Map[String, String]())
+          row.put("sale_growth_rate", "--")
+          dataSaleInsert.put(date, row)
+        } else if (!dataSale.contains(date) && dataSale.contains(lastDate)) {
+          val row = Map[String, String]()
+          row.put("sale_num", "0")
+          row.put("sale_proportion", "0")
+          row.put("sale_growth_rate", "-100")
+          dataSaleInsert.put(date, row)
+        } else {
+          val row = Map[String, String]()
+          row.put("sale_num", "0")
+          row.put("sale_proportion", "0")
+          row.put("sale_growth_rate", "0")
+          dataSaleInsert.put(date, row)
+        }
+      })
+    }
+    //    println(dataSaleInsert)
+
+    val dataInsert: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
+
+    dataProduceInsert.keys.foreach(x => {
+      dataInsert.put(x, dataProduceInsert.get(x).get)
+    })
+    dataSaleInsert.keys.foreach(x => {
+      if (dataInsert.contains(x)) {
+        dataInsert.get(x).get.put("sale_num", dataSaleInsert.get(x).get.get("sale_num").get)
+        dataInsert.get(x).get.put("sale_proportion", dataSaleInsert.get(x).get.get("sale_proportion").get)
+        dataInsert.get(x).get.put("sale_growth_rate", dataSaleInsert.get(x).get.get("sale_growth_rate").get)
+      } else {
+        dataInsert.put(x, dataSaleInsert.get(x).get)
       }
-      (x._1, x._2, saleProportion, saleGrowthRate)
     })
-    val saleData14 = saleData13.map(x => {
-      (x._1, Map("sale_num" -> x._2, "sale_proportion" -> x._3, "sale_growth_rate" -> x._4))
-    })
-
-    val produceSaleData = produceData14.union(saleData14)
-    val produceSaleData1 = produceSaleData.reduceByKey((x, y) => {
-      x ++ y
-    })
-
-    val result = produceSaleData1.repartition(1)
 
     val cleanDate = date.DateUtil.now
-    result.foreachPartition(partition => {
-      @transient val dbp = DatabasePool.getInstance(databaseConf)
-      val con = dbp.getConnection
-      val cleanSql = "delete from analyze_produce_sale where create_time < '" + cleanDate + "'"
-      val ps = con.prepareStatement(cleanSql)
+    @transient val dbp = DatabasePool.getInstance(databaseConf)
+    val con = dbp.getConnection
+    val cleanSql = "delete from analyze_produce_sale where create_time < '" + cleanDate + "'"
+    val ps = con.prepareStatement(cleanSql)
+    ps.execute()
+    ps.close()
+    dataInsert.keys.foreach(x => {
+      val date = x
+      val data=dataInsert.get(x).get
+      val data1 = data.getOrElse("produce_num","0")
+      val data2 = data.getOrElse("produce_proportion","0")
+      val data3 = data.getOrElse("produce_growth_rate","0")
+      val data4 = data.getOrElse("sale_num","0")
+      val data5 = data.getOrElse("sale_proportion","0")
+      val data6 = data.getOrElse("sale_growth_rate","0")
+      val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" +date+ "','" + data1 + "','" + data2 + "','" + data3 + "','" + data4 + "','" + data5 + "','" + data6 + "','" + departId + "')"
+      println(sql)
+      val ps = con.prepareStatement(sql)
       ps.execute()
       ps.close()
-      partition.foreach(x => {
-        val data = x._2
-        var data1 = data.getOrElse("produce_num", 0)
-        var data2 = data.getOrElse("produce_proportion", 0)
-        var data3 = data.getOrElse("produce_growth_rate", 0)
-        var data4 = data.getOrElse("sale_num", 0)
-        var data5 = data.getOrElse("sale_proportion", 0)
-        var data6 = data.getOrElse("sale_growth_rate", 0)
-        val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + ",'" + data3 + "'," + data4 + "," + data5 + ",'" + data6 + "','" + departId + "')"
-        println(sql)
-        val ps = con.prepareStatement(sql)
-        ps.execute()
-        ps.close()
-      })
-      con.close()
     })
+    con.close()
+
+    //    val produceData14 = produceData13.map(x => {
+    //      (x._1, Map("produce_num" -> x._2, "produce_proportion" -> x._3, "produce_growth_rate" -> x._4))
+    //    })
+
+
+    //    val saleData6 = saleData5.map(x => {
+    //      val nextYear = Integer.parseInt(x._1.substring(0, 4)) + 1
+    //      (nextYear + x._1.substring(4, 7), x._2)
+    //    })
+
+    //    val saleData9 = saleData5.leftOuterJoin(saleData6)
+
+
+    //    val saleData14 = saleData13.map(x => {
+    //      (x._1, Map("sale_num" -> x._2, "sale_proportion" -> x._3, "sale_growth_rate" -> x._4))
+    //    })
+    //
+    //    val produceSaleData = produceData14.union(saleData14)
+    //    val produceSaleData1 = produceSaleData.reduceByKey((x, y) => {
+    //      x ++ y
+    //    })
+    //
+    //    val result = produceSaleData1.repartition(1)
+    //
+    //    val cleanDate = date.DateUtil.now
+    //    result.foreachPartition(partition => {
+    //      @transient val dbp = DatabasePool.getInstance(databaseConf)
+    //      val con = dbp.getConnection
+    //      val cleanSql = "delete from analyze_produce_sale where create_time < '" + cleanDate + "'"
+    //      val ps = con.prepareStatement(cleanSql)
+    //      ps.execute()
+    //      ps.close()
+    //      partition.foreach(x => {
+    //        val data = x._2
+    //        var data1 = data.getOrElse("produce_num", 0)
+    //        var data2 = data.getOrElse("produce_proportion", 0)
+    //        var data3 = data.getOrElse("produce_growth_rate", 0)
+    //        var data4 = data.getOrElse("sale_num", 0)
+    //        var data5 = data.getOrElse("sale_proportion", 0)
+    //        var data6 = data.getOrElse("sale_growth_rate", 0)
+    //        val sql = "insert into analyze_produce_sale values('" + UUID.randomUUID.toString + "','" + cleanDate + "','" + x._1 + "'," + data1 + "," + data2 + ",'" + data3 + "'," + data4 + "," + data5 + ",'" + data6 + "','" + departId + "')"
+    //        println(sql)
+    //        val ps = con.prepareStatement(sql)
+    //        ps.execute()
+    //        ps.close()
+    //      })
+    //      con.close()
+    //    })
 
     //    val resultProduce = produceData5.repartition(1)
     //
