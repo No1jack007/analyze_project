@@ -39,7 +39,7 @@ object ReportNumStatistics {
     val ps = con.prepareStatement("select reminder_time from mail_config")
     val mailConfig = ps.executeQuery
     while (mailConfig.next) {
-      reminderTime = Integer.parseInt(mailConfig.getString("type"))
+      reminderTime = Integer.parseInt(mailConfig.getString("reminder_time"))
     }
     ps.execute()
     ps.close()
