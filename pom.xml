@@ -13,7 +13,7 @@
         <scala.version>2.11</scala.version>
         <spark.version>2.4.1</spark.version>
         <hadoop.version>2.9.1</hadoop.version>
-        <mysql.version>5.1.47</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <druid.verion>1.1.22</druid.verion>
     </properties>
 
